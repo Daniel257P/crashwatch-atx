@@ -1,0 +1,15 @@
+{
+  "name": "crashwatch-atx",
+  "version": "1.0.0",
+  "description": "This repository is for my final personal project CrashWatch ATX. CrashWatch ATX is a web application that centralizes and visualizes the most \r common types of traffic accidents in Austin, TX through interactive heat maps and street\r level imagery, allowing users to analyze daily, weekly, monthly, and annual patterns to \r support road safety decisions and urban planning. \r This idea comes from my experience contributing to Hivemapper and from the high road \r fatality rate in the Dominican Republic.",
+  "main": "index.js",
+  "scripts": {
+  "lint": "eslint js/**/*.js",
+  "lint:fix": "eslint js/**/*.js --fix",
+  "format": "prettier --write js/**/*.js css/*.css index.html"
+    },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

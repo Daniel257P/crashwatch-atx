@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daniel Nicolas Paulino Polanco | WDD 330 | CrashWatch ATX</title>
+  <meta name="description" content="This is the homepage for CrashWatch ATX, a web application for monitoring traffic incidents and crash records in Austin, TX.">
+  <meta name="author" content="Daniel N Paulino">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="app-name">
+        <img src="assets/icons/favicon.svg" alt="CrashWatch ATX" style="width:28px; height:28px; border-radius:7px;">
+        <div class="app-name-text">
+          <span class="app-title">CrashWatch ATX</span>
+          <span class="app-subtitle">Austin · TX</span>
+        </div>
+      </div>
+      <div class="view-toggle">
+        <button class="chip active" id="btn-heatmap">Heat map</button>
+        <button class="chip" id="btn-pins">Pins</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <input type="text" class="search-bar" placeholder="Search location or intersection…">
+      <button class="btn-export" id="btn-export">Export data</button>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" data-tab="incidents">Incidents</button>
+        <button class="tab" data-tab="stats">Stats</button>
+        <button class="tab" data-tab="report">Report</button>
+      </div>
+
+      <!-- INCIDENTS TAB -->
+      <div class="tab-content active" id="tab-incidents">
+
+        <div class="filter-section">
+          <div class="filter-label">Time range</div>
+          <div class="chip-row">
+            <button class="chip active" data-time="today">Today</button>
+            <button class="chip" data-time="week">Week</button>
+            <button class="chip" data-time="month">Month</button>
+            <button class="chip" data-time="year">Year</button>
+            <button class="chip" data-time="custom">Custom</button>
+          </div>
+          <div class="custom-range" id="custom-range">
+            <input type="datetime-local" id="custom-start" class="date-input">
+            <span class="range-sep">→</span>
+            <input type="datetime-local" id="custom-end" class="date-input">
+          </div>
+          <div class="filter-label" style="margin-top: 10px;">Type</div>
+          <div class="chip-row">
+            <button class="chip active" data-type="all">All</button>
+            <button class="chip" data-type="crash">Crashes</button>
+            <button class="chip" data-type="hazard">Hazards</button>
+            <button class="chip" data-type="other">Other</button>
+          </div>
+        </div>
+
+        <div class="incident-list-header" id="incident-list-header">Loading incidents…</div>
+
+        <ul class="incident-list" id="incident-list">
+          <!-- Populated the list by api.js -->
+        </ul>
+
+      </div>
+
+      <!-- STATS TAB -->
+      <div class="tab-content" id="tab-stats">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-today">—</div>
+            <div class="stat-lbl">Today's incidents</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-fatal">—</div>
+            <div class="stat-lbl">Fatalities today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-month">—</div>
+            <div class="stat-lbl">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-ytd">—</div>
+            <div class="stat-lbl">Total YTD</div>
+          </div>
+        </div>
+        <div class="chart-placeholder">
+          <div class="chart-label">Top crash types</div>
+          <div id="chart-types"></div>
+        </div>
+        <div class="chart-placeholder">
+          <div class="chart-label">Peak hours</div>
+          <div id="chart-hours"></div>
+        </div>
+      </div>
+
+      <!-- REPORT TAB -->
+      <div class="tab-content" id="tab-report">
+        <div class="report-form">
+          <p class="report-intro">Report an incident. No account required.</p>
+          <div class="form-group">
+            <label class="form-label">Location / intersection</label>
+            <input type="text" class="form-input" id="report-location" placeholder="e.g. I-35 & 51st St">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date & time</label>
+            <input type="datetime-local" class="form-input" id="report-datetime">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Photos</label>
+            <div class="photo-upload" id="photo-upload">
+              + Add photos
+            </div>
+            <input type="file" id="photo-input" accept="image/*" multiple hidden>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Comment</label>
+            <textarea class="form-textarea" id="report-comment" placeholder="What did you observe?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your name or social handle (optional)</label>
+            <input type="text" class="form-input" id="report-author" placeholder="Anonymous · @instagram · name">
+          </div>
+          <button class="btn-submit" id="btn-submit">Submit report</button>
+        </div>
+        <div class="news-section">
+          <div class="news-label">Related news</div>
+          <div id="news-list"></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAP -->
+    <main class="map-container">
+      <div id="map"></div>
+    </main>
+
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel" id="detail-panel" style="display:none;">
+    <div class="detail-header">
+      <span class="detail-title" id="detail-title">—</span>
+      <button class="detail-close" id="detail-close">✕</button>
+    </div>
+    <div class="street-view" id="street-view">
+      Street-level imagery loading…
+    </div>
+    <div class="detail-meta" id="detail-meta">—</div>
+    <div class="detail-comments" id="detail-comments"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- App JS -->
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

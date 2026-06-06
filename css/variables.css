@@ -1,0 +1,25 @@
+:root {
+  /* Primary palette */
+  --color-primary:       #0d1117;
+  --color-primary-dark:  #1E40AF;
+  --color-primary-tint:  #DBEAFE;
+  --color-bg:            #F0F7FF;
+  --color-white:         #FFFFFF;
+
+  /* Text */
+  --color-text:          #1E293B;
+  --color-text-muted:    #6B7280;
+  --color-border:        #DBEAFE;
+
+  /* Typography */
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'IBM Plex Sans', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  /* Layout */
+  --sidebar-width:   300px;
+  --topbar-height:   44px;
+  --radius-sm:       6px;
+  --radius-md:       10px;
+  --radius-lg:       14px;
+}
