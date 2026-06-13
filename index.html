@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="topbar-right">
-      <input type="text" class="search-bar" placeholder="Search location or intersection…">
+      <input type="text" id="search-bar" class="search-bar" placeholder="Search location or intersection…">
       <button class="btn-export" id="btn-export">Export data</button>
     </div>
   </header>
@@ -87,14 +87,35 @@
 
       <!-- STATS TAB -->
       <div class="tab-content" id="tab-stats">
+
+        <!-- Date Range Slider -->
+        <div class="date-range-container">
+          <div class="date-range-header">
+            <span class="date-range-label">Date range</span>
+            <button class="btn-reset" id="btn-reset-range">Reset</button>
+          </div>
+          <div class="date-range-display">
+            <span id="range-start-label">—</span>
+            <span class="range-separator">→</span>
+            <span id="range-end-label">—</span>
+          </div>
+          <div class="range-slider-wrapper">
+            <input type="range" id="range-start" class="range-input" min="0" max="100" value="0">
+            <input type="range" id="range-end"   class="range-input" min="0" max="100" value="100">
+            <div class="range-track">
+              <div class="range-fill" id="range-fill"></div>
+            </div>
+          </div>
+        </div>
+
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-num" id="stat-today">—</div>
-            <div class="stat-lbl">Today's incidents</div>
+            <div class="stat-lbl">Incidents today</div>
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-fatal">—</div>
-            <div class="stat-lbl">Fatalities today</div>
+            <div class="stat-lbl">With casualties</div>
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-month">—</div>
@@ -102,7 +123,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-num" id="stat-ytd">—</div>
-            <div class="stat-lbl">Total YTD</div>
+            <div class="stat-lbl">In selected range</div>
           </div>
         </div>
         <div class="chart-placeholder">

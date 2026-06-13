@@ -1,15 +1,63 @@
 import { initMap, renderPins, renderHeatPoints } from './modules/maps.js';
 import { fetchTrafficIncidents, fetchCrashRecords, normalizeIncident, normalizeCrash } from './modules/api.js';
 import { initFilters, matchesTimeFilter, matchesTypeFilter, activeFilter } from './modules/filter.js';
+import { updateStats, initDateRangeSlider } from './modules/stats.js';
+import { initExport } from './modules/exports.js';
+import { initCommunity, getReportsForLocation, setReportCoords, getDistanceMeters } from './modules/community.js';
+import { initAutocomplete } from './modules/autocomplete.js';
 
 let allData = [];
+window._allData = allData;
+
+// Set by the date range slider; overrides time chip filter when non-null
+let customDateRange = null;
+
+function setCustomDateRange(start, end) {
+  customDateRange = (start && end) ? { start, end } : null;
+}
 
 // App Init
 async function init() {
   console.log('CrashWatch ATX — initializing...');
   initMap();
   initFilters(applyFilters);
+  initCommunity();
+
+  initAutocomplete(
+    document.getElementById('topbar-search'),
+    (place) => {
+      const lat = parseFloat(place.lat);
+      const lng = parseFloat(place.lon);
+      window._map.setView([lat, lng], 15);
+      const marker = L.marker([lat, lng])
+        .addTo(window._map)
+        .bindPopup(place.display_name.split(',').slice(0, 2).join(','))
+        .openPopup();
+      setTimeout(() => window._map.removeLayer(marker), 5000);
+    }
+  );
+
+  initAutocomplete(
+    document.getElementById('report-location'),
+    (place) => {
+      const shortName = place.display_name.split(',').slice(0, 3).join(',');
+      document.getElementById('report-location').value = shortName;
+      setReportCoords(parseFloat(place.lat), parseFloat(place.lon));
+    }
+  );
+  initExport(() => allData.filter(item =>
+    matchesTimeFilter(item, activeFilter) && matchesTypeFilter(item, activeFilter)
+  ));
   await loadIncidents();
+  initDateRangeSlider(
+    () => allData,
+    applyFilters,
+    populateList,
+    (items) => renderPins(items, openDetail),
+    renderHeatPoints,
+    updateStats,
+    setCustomDateRange
+  );
   setInterval(loadIncidents, 5 * 60 * 1000);
 }
 
@@ -27,19 +75,33 @@ async function loadIncidents() {
     ...crashData.map(normalizeCrash)
   ];
 
+  window._allData = allData; // Expose for debugging
+
   applyFilters(activeFilter);
   console.log(`${allData.length} total incidents loaded`);
 }
 
-// Filter allData and push results to map + sidebar 
+// Filter allData and push results to map + sidebar
 function applyFilters(filter) {
-  const filtered = allData.filter(item =>
-    matchesTimeFilter(item, filter) && matchesTypeFilter(item, filter)
-  );
+  // A time chip click (any value except 'custom') always resets the slider range
+  if (filter.time !== 'custom') {
+    customDateRange = null;
+  }
 
-  renderPins(filtered);
+  const filtered = allData.filter(item => {
+    if (customDateRange) {
+      const ts = item.published || item.date;
+      if (!ts) return false;
+      const d = new Date(ts);
+      return d >= customDateRange.start && d <= customDateRange.end && matchesTypeFilter(item, filter);
+    }
+    return matchesTimeFilter(item, filter) && matchesTypeFilter(item, filter);
+  });
+
+  renderPins(filtered, openDetail);
   renderHeatPoints(filtered);
   populateList(filtered, filter);
+  updateStats(filtered);
 }
 
 // Open detail panel 
@@ -70,6 +132,55 @@ function openDetail(item, liEl) {
 
   metaEl.textContent = parts.join(' · ');
   panel.style.display = 'block';
+
+  // Street-level imagery
+  const streetViewEl = document.getElementById('street-view');
+  if (streetViewEl) {
+    streetViewEl.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-text-muted);font-size:11px;">
+        Street-level imagery coming soon Layer two of the map will include recent photos from this location, sourced from public APIs. Stay tuned!
+      </div>`;
+  }
+
+  // Community reports — GPS proximity or address fallback
+  const commentsEl = document.getElementById('detail-comments');
+  if (commentsEl) {
+    const reports = getReportsForLocation(item.lat, item.lng, item.address);
+    if (reports.length > 0) {
+      commentsEl.innerHTML = `
+        <div class="community-section-label">
+          ${reports.length} community report${reports.length !== 1 ? 's' : ''} nearby
+        </div>
+        ${reports.map(r => `
+          <div class="community-report">
+            <div class="report-header">
+              <span class="report-author">${r.author}</span>
+              <span class="report-time">
+                ${new Date(r.submitted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            </div>
+            <div class="report-comment">${r.comment}</div>
+            ${r.lat && item.lat ? `
+              <div class="report-distance">
+                📍 ${Math.round(getDistanceMeters(item.lat, item.lng, r.lat, r.lng))}m from this incident
+              </div>
+            ` : ''}
+            ${r.photo ? `
+              <div class="report-photo-wrapper">
+                <img src="${r.photo}" alt="Photo by ${r.author}" class="report-photo" onerror="this.style.display='none'">
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      `;
+    } else {
+      commentsEl.innerHTML = '<p class="no-reports">No community reports near this location yet.</p>';
+    }
+  }
+
+  // Related news placeholder
+  const newsEl = document.getElementById('detail-news');
+  if (newsEl) newsEl.innerHTML = '';
 }
 
 // Show a temporary inline message for items with no GPS coordinates
@@ -78,7 +189,7 @@ function showNoGpsMessage(liEl) {
 
   const msg = document.createElement('li');
   msg.className = 'no-gps-msg';
-  msg.textContent = '📍 No map location available for this record.';
+  msg.textContent = 'No map location available for this record.';
   liEl.insertAdjacentElement('afterend', msg);
 
   setTimeout(() => msg.remove(), 3000);
@@ -90,8 +201,14 @@ function populateList(data, filter) {
   const headerEl = document.getElementById('incident-list-header');
   if (!list) return;
 
-  // Only count items with a readable address
-  const visible = data.filter(item => item.address && item.address !== 'Unknown location');
+  // Only count items with a readable address, sorted newest first
+  const visible = data
+    .filter(item => item.address && item.address !== 'Unknown location')
+    .sort((a, b) => {
+      const ta = new Date(a.published || a.date || 0).getTime();
+      const tb = new Date(b.published || b.date || 0).getTime();
+      return tb - ta;
+    });
 
   if (headerEl) {
     const timeLabel = filter.time === 'custom' ? 'custom range' : filter.time;
@@ -101,7 +218,7 @@ function populateList(data, filter) {
 
   list.innerHTML = '';
 
-  visible.slice(0, 50).forEach(item => {
+  visible.forEach(item => {
     const severity    = item.severity || 'unknown';
     const noGps       = !item.lat;
     const ts          = item.published || item.date;

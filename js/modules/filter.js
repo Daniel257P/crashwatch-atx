@@ -33,7 +33,7 @@ export function getTimeRange(filter) {
   return { start: new Date(now - ms), end: now };
 }
 
-// items with no timestamp are excluded — can't place them in a time range
+// items with no timestamp are excluded 
 export function matchesTimeFilter(item, filter) {
   const ts = item.published || item.date;
   if (!ts) return false;

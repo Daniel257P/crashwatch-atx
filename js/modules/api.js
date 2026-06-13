@@ -9,7 +9,7 @@ const CRASH_RECORDS_URL =
 export async function fetchTrafficIncidents() {
   try {
     const response = await fetch(
-      `${TRAFFIC_INCIDENTS_URL}?$limit=100&$order=published_date DESC`
+      `${TRAFFIC_INCIDENTS_URL}?$limit=200&$order=published_date DESC`
     );
 
     if (!response.ok) {
@@ -30,7 +30,7 @@ export async function fetchTrafficIncidents() {
 export async function fetchCrashRecords() {
   try {
     const response = await fetch(
-      `${CRASH_RECORDS_URL}?$limit=100&$order=crash_timestamp DESC`
+      `${CRASH_RECORDS_URL}?$limit=200&$order=crash_timestamp DESC`
     );
 
     if (!response.ok) {
@@ -52,7 +52,6 @@ export function normalizeIncident(raw) {
   const label = raw.issue_reported || '';
   const upper = label.toUpperCase();
 
-  // Map the 11 known issue_reported values to three display categories
   let severity = 'other';
   if (
     upper.includes('COLLISION') ||
@@ -84,19 +83,18 @@ export function normalizeIncident(raw) {
   };
 }
 
+
 //Crash Record
 export function normalizeCrash(raw) {
   const sevId = parseInt(raw.crash_sev_id);
-  // 1 = Fatal, 2 = Serious injury, 3 = Minor injury → crash
-  // 4 = Possible injury, 5 = Not injured / PDO → other
   const severity = (sevId >= 1 && sevId <= 3) ? 'crash' : 'other';
 
   return {
     id:         raw.case_id || raw.id || 'unknown',
     type:       raw.collsn_desc || 'Unknown',
     address:    raw.address_display || 'Unknown location',
-    lat:        null,
-    lng:        null,
+    lat:        parseFloat(raw.latitude)  || null,
+    lng:        parseFloat(raw.longitude) || null,
     date:       raw.crash_timestamp || null,
     severity:   severity,
     deaths:     parseInt(raw.death_cnt) || 0,

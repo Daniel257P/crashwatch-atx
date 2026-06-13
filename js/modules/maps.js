@@ -47,7 +47,7 @@ export function initMap() {
 }
 
 // Render pins for the given filtered items
-export function renderPins(items) {
+export function renderPins(items, onPinClick) {
   pinsLayer.clearLayers();
 
   const colors = {
@@ -59,7 +59,7 @@ export function renderPins(items) {
     const color = colors[item.severity] || colors.unknown;
 
     const marker = L.circleMarker([item.lat, item.lng], {
-      radius: 7,
+      radius: 5,
       fillColor: color,
       color: '#ffffff',
       weight: 1.5,
@@ -68,7 +68,7 @@ export function renderPins(items) {
     });
 
     marker.bindTooltip(item.address || 'Incident', { permanent: false, direction: 'top' });
-    marker.on('click', () => showDetailPanel(item.address, item.severity, item.lat, item.lng));
+    marker.on('click', () => onPinClick?.(item));
     pinsLayer.addLayer(marker);
   });
 
@@ -131,17 +131,6 @@ function removeAllHeatLayers() {
   });
 }
 
-//Detail panel
-function showDetailPanel(title, severity, lat, lng) {
-  const panel   = document.getElementById('detail-panel');
-  const titleEl = document.getElementById('detail-title');
-  const metaEl  = document.getElementById('detail-meta');
-  if (panel && titleEl && metaEl) {
-    titleEl.textContent = title || 'Unknown location';
-    metaEl.textContent  = `${severity?.toUpperCase()} · Lat: ${lat?.toFixed(4)} · Lng: ${lng?.toFixed(4)}`;
-    panel.style.display = 'block';
-  }
-}
 
 function setActiveChip(activeId, inactiveId) {
   document.getElementById(activeId)?.classList.add('active');
