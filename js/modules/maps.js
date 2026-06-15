@@ -87,7 +87,7 @@ export function renderHeatPoints(items) {
 
   items.forEach(item => {
     if (!item.lat || !item.lng || !inBounds(item.lat, item.lng)) return;
-    const key = item.severity in heatPoints ? item.severity : 'property';
+    const key = item.severity in heatPoints ? item.severity : 'other';
     heatPoints[key].push([item.lat, item.lng, 1.0]);
   });
 

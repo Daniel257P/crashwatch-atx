@@ -8,10 +8,29 @@
   <meta name="author" content="Daniel N Paulino">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
+
+  <!-- Preconnect to external origins for faster resource resolution -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://nominatim.openstreetmap.org">
+
+  <!-- Non-blocking font load: preload as style, swap to stylesheet on load to improve performance -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&family=Plus+Jakarta+Sans:wght@700&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&family=Plus+Jakarta+Sans:wght@700&display=swap">
+  </noscript>
+
+  <!-- Non-blocking Leaflet CSS this was add to enhance performance -->
+  <link rel="preload" as="style"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  </noscript>
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -141,26 +160,26 @@
         <div class="report-form">
           <p class="report-intro">Report an incident. No account required.</p>
           <div class="form-group">
-            <label class="form-label">Location / intersection</label>
+            <label for="report-location" class="form-label">Location / intersection</label>
             <input type="text" class="form-input" id="report-location" placeholder="e.g. I-35 & 51st St">
           </div>
           <div class="form-group">
-            <label class="form-label">Date & time</label>
+            <label for="report-datetime" class="form-label">Date & time</label>
             <input type="datetime-local" class="form-input" id="report-datetime">
           </div>
           <div class="form-group">
-            <label class="form-label">Photos</label>
+            <label for="photo-input" class="form-label">Photos</label>
             <div class="photo-upload" id="photo-upload">
               + Add photos
             </div>
             <input type="file" id="photo-input" accept="image/*" multiple hidden>
           </div>
           <div class="form-group">
-            <label class="form-label">Comment</label>
+            <label for="report-comment" class="form-label">Comment</label>
             <textarea class="form-textarea" id="report-comment" placeholder="What did you observe?"></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label">Your name or social handle (optional)</label>
+            <label for="report-author" class="form-label">Your name or social handle (optional)</label>
             <input type="text" class="form-input" id="report-author" placeholder="Anonymous · @instagram · name">
           </div>
           <button class="btn-submit" id="btn-submit">Submit report</button>

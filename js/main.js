@@ -24,7 +24,7 @@ async function init() {
   initCommunity();
 
   initAutocomplete(
-    document.getElementById('topbar-search'),
+    document.getElementById('search-bar'),
     (place) => {
       const lat = parseFloat(place.lat);
       const lng = parseFloat(place.lon);

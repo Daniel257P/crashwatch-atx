@@ -787,14 +787,15 @@ html, body {
   }
 
   .topbar-left {
-    gap: 50px;
+    gap: 12px;
   }
 
-    .btn-export {
-    display: none; /* Hide the export functionality on the mobile view*/
+  .btn-export {
+    display: none;
   }
+
   .search-bar {
-    width: 180px;
+    width: min(180px, calc(100vw - 220px));
     font-size: 11px;
   }
 
