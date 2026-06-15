@@ -791,8 +791,8 @@ html, body {
   }
 
   .btn-export {
-    display: none;
-  }
+    width: min(100%, 200px);
+  } 
 
   .search-bar {
     width: min(180px, calc(100vw - 220px));
